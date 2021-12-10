@@ -6,7 +6,7 @@ RUN yarn && yarn build
 
 FROM node:lts
 WORKDIR /app
-COPY --from=install /app /app
+COPY --from=install /app/dist /app/node_modules app/package.json /app/
 
 # accessKeyId
 ENV ACCESS_KEY_ID ''
