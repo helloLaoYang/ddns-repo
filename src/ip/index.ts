@@ -4,7 +4,6 @@
  * ip client
  */
 import publicip from 'public-ip'
-import Log from '../utils/log'
 import schedule from 'node-schedule'
 
 const { TYPE } = process.env
@@ -19,15 +18,11 @@ export default class Ip {
      * 每分钟检测一次ip
      */
     this.job = schedule.scheduleJob('*/30 * * * * *', async () => {
-      Log('开始检测当前IP')
       const ip = await publicip[
         TYPE=== 'A'
         ? 'v4'
         : 'v6'
       ]()
-
-      Log(ip)
-
       this.run(ip)
     })
   }
