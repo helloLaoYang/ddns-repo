@@ -2,9 +2,12 @@
 /**
  * ddns
  */
-import dayjs from 'dayjs'
 import Ip from '../ip'
+import Log from '../utils/log'
 import { describeSubDomainRecords, deleteSubDomainRecords, AddDomainRecord, UpdateDomainRecord } from './openapi'
+
+
+const { TYPE } = process.env
 
 export type Conf = {
   domainName: string;
@@ -15,6 +18,8 @@ export class DDns {
   private domainName: string = ''
 
   private RR: string = ''
+
+  private type: 'A' | 'AAAA' = TYPE === 'A' ? 'A' : 'AAAA'
 
   private records (): Promise<{
     recordId: string
@@ -46,7 +51,7 @@ export class DDns {
   private async init () {
     Ip.on(this.listener)
 
-    this.log('DDNS服务正在运行')
+    Log('DDNS服务正在运行')
   }
 
   /**
@@ -78,7 +83,7 @@ export class DDns {
 
     await this.ddns(ip)
 
-    this.log(`解析结果IP:${ ip }`)
+    Log(`解析结果IP:${ ip }`)
   }
 
 
@@ -87,24 +92,19 @@ export class DDns {
 
     // 新增解析
     if (!records || !records.length) {
-      this.log('删除当前域名的所有解析.')
+      Log('删除当前域名的所有解析.')
       await deleteSubDomainRecords(this.domainName, this.RR)
-      this.log('新增解析记录')
-      await AddDomainRecord(this.domainName, this.RR, ip)
+      Log('新增解析记录')
+      await AddDomainRecord(this.domainName, this.RR, ip, this.type)
       return
     }
 
     // 变更解析
     records.forEach(async ({ recordId }) => {
-      this.log(`修改解析记录[${ recordId }]`)
-      await UpdateDomainRecord(recordId, this.RR, ip)
+      Log(`修改解析记录[${ recordId }]`)
+      await UpdateDomainRecord(recordId, this.RR, ip, this.type)
     })
     
-  }
-
-
-  private log = (message: string) => {
-    console.log(dayjs().format('YYYY/MM/DD HH:mm:ss'), `DOMAIN: [${ this.RR }.${ this.domainName }] -> ${ message.toString() }`)
   }
   
 }

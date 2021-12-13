@@ -3,12 +3,15 @@ FROM hellolaoyang/node-yarn as builder
 WORKDIR /app
 COPY . .
 RUN yarn && yarn build
-FROM node:lts
 
-WORKDIR /app
-COPY --from=builder /app /app
+FROM node:lts
+WORKDIR /ddns
+COPY --from=builder /app/ddns /ddns/
+
+RUN npm init -y; \
+    npm install dayjs node-schedule public-ip @alicloud/openapi-client @alicloud/alidns20150109;
 # 修改时区东八区
-RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+ENV TZ 'Asia/Shanghai'
 # accessKeyId
 ENV ACCESS_KEY_ID ''
 # accessKeySecret
@@ -18,4 +21,7 @@ ENV RR ''
 
 ENV DOMAIN_NAME ''
 
-CMD npm run start
+# 记录类型
+ENV TYPE 'A'
+
+CMD node .

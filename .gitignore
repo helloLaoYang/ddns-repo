@@ -1,4 +1,5 @@
 
 dist
+ddns
 node_modules
 *.error.log
