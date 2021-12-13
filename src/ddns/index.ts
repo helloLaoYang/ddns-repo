@@ -73,38 +73,45 @@ export class DDns {
    * listener
    */
   private listener = async (ip: string) => {
-    const aliyunrecords = (
-      await this.records()
-    ).map(({ value }) => (value))
-
-    if (aliyunrecords.includes(ip)) {
-      return
+    try {
+      const aliyunrecords = (
+        await this.records()
+      ).map(({ value }) => (value))
+  
+      if (aliyunrecords.includes(ip)) {
+        return
+      }
+  
+      await this.ddns(ip)
+  
+      Log(`解析结果IP:${ ip }`)
+    } catch (error) {
+      console.error(error)
     }
-
-    await this.ddns(ip)
-
-    Log(`解析结果IP:${ ip }`)
   }
 
 
   private async ddns (ip: string) {
-    const records = await this.records()
+    try {
+      const records = await this.records()
 
-    // 新增解析
-    if (!records || !records.length) {
-      Log('删除当前域名的所有解析.')
-      await deleteSubDomainRecords(this.domainName, this.RR)
-      Log('新增解析记录')
-      await AddDomainRecord(this.domainName, this.RR, ip, this.type)
-      return
+      // 新增解析
+      if (!records || !records.length) {
+        Log('删除当前域名的所有解析.')
+        await deleteSubDomainRecords(this.domainName, this.RR)
+        Log('新增解析记录')
+        await AddDomainRecord(this.domainName, this.RR, ip, this.type)
+        return
+      }
+
+      // 变更解析
+      records.forEach(async ({ recordId }) => {
+        Log(`修改解析记录[${ recordId }]`)
+        await UpdateDomainRecord(recordId, this.RR, ip, this.type)
+      })
+    } catch (error) {
+      console.error(error)
     }
-
-    // 变更解析
-    records.forEach(async ({ recordId }) => {
-      Log(`修改解析记录[${ recordId }]`)
-      await UpdateDomainRecord(recordId, this.RR, ip, this.type)
-    })
-    
   }
   
 }
