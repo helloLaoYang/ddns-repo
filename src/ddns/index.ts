@@ -86,7 +86,6 @@ export class DDns {
   
       Log(`解析结果IP:${ ip }`)
     } catch (error) {
-      console.error(error)
     }
   }
 
@@ -110,7 +109,6 @@ export class DDns {
         await UpdateDomainRecord(recordId, this.RR, ip, this.type)
       })
     } catch (error) {
-      console.error(error)
     }
   }
   
